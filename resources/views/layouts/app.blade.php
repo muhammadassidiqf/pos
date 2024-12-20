@@ -44,11 +44,21 @@
             @include('layouts.sidebar')
             @include('layouts.navbar')
             @include('layouts.toolbar')
-            <div class="d-flex flex-column flex-column-fluid mb-5" id="kt_content">
+            <div class="h-100 d-flex align-items-center justify-content-center" id="loading-spinner">
+                <div class="spinner-border spinner-border-lg fs-3 text-black fw-semibold" role="status">
+                </div>
+                <div class="loading-text fs-4 text-black fw-semibold ms-3">
+                    Loading, please wait
+                    <div class="spinner-grow" style="width: 5px; height: 5px;" role="status"></div>
+                    <div class="spinner-grow" style="width: 5px; height: 5px;" role="status"></div>
+                    <div class="spinner-grow" style="width: 5px; height: 5px;" role="status"></div>
+                </div>
+            </div>
+            <div class="d-flex flex-column flex-column-fluid mb-5 d-none" id="kt_content">
                 @yield('content')
             </div>
 
-            @include('layouts.footer')
+            {{-- @include('layouts.footer') --}}
         </div>
     </div>
     @include('layouts.side-right')
@@ -79,6 +89,16 @@
 @show
 @stack('scripts')
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const spinner = document.getElementById('loading-spinner');
+        const appContent = document.getElementById('kt_content');
+
+        window.addEventListener('load', async () => {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            spinner.classList.add('d-none');
+            appContent.classList.remove('d-none');
+        })
+    });
     let flashdatasukses = $('.success-session').data('flashdata');
     if (flashdatasukses) {
         Swal.fire({

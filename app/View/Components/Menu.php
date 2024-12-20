@@ -8,12 +8,12 @@ use Illuminate\View\Component;
 
 class Menu extends Component
 {
-    /**
-     * Create a new component instance.
-     */
-    public function __construct()
+    public $product;
+    public $cart;
+    public function __construct($product = null, $cart = null)
     {
-        //
+        $this->product = $product;
+        $this->cart = $cart;
     }
 
     /**
