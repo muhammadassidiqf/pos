@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('content-admin')
+@section('content')
     <div id="kt_content_container" class="container-xxl">
         <!--begin::Card-->
         <div class="card">

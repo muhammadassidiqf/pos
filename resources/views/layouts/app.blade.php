@@ -21,13 +21,8 @@
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
         rel="stylesheet" />
     @section('styles')
-        <!--begin::Fonts-->
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
-        <!--end::Fonts-->
-        <!--begin::Page Vendor Stylesheets(used by this page)-->
         <link href="{{ asset('plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" type="text/css" />
-        <!--end::Page Vendor Stylesheets-->
-        <!--begin::Global Stylesheets Bundle(used by all pages)-->
         <link href="{{ asset('plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ asset('plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ asset('css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
@@ -39,34 +34,23 @@
 <body id="kt_body"
     class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed aside-enabled aside-fixed">
     {{ $title }}
-    <!--begin::Main-->
-
     @if (session('success'))
         <div class="success-session" data-flashdata="{{ session('success') }}"></div>
     @elseif(session('error'))
         <div class="error-session" data-flashdata="{{ session('error') }}"></div>
     @endif
-    <!--begin::Root-->
     <div class="d-flex flex-column flex-root">
-        <!--begin::Page-->
         <div class="page d-flex flex-row flex-column-fluid">
             @include('layouts.sidebar')
-            <!--begin::Wrapper-->
             @include('layouts.navbar')
             @include('layouts.toolbar')
-            <!--begin::Content-->
-            <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
-                @yield('content-admin')
+            <div class="d-flex flex-column flex-column-fluid mb-5" id="kt_content">
+                @yield('content')
             </div>
-            <!--end::Content-->
 
             @include('layouts.footer')
         </div>
-        <!--end::Wrapper-->
     </div>
-    <!--end::Page-->
-    </div>
-    <!--end::Root-->
     @include('layouts.side-right')
 
 
@@ -83,41 +67,56 @@
             </svg>
         </span>
     </div>
-    @section('scripts')
-        <script src="{{ asset('plugins/global/plugins.bundle.js') }}"></script>
-        <script src="{{ asset('js/scripts.bundle.js') }}"></script>
-        <script src="{{ asset('plugins/custom/datatables/datatables.bundle.js') }}"></script>
-        <script src="{{ asset('plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
-        <script src="{{ asset('js/custom/widgets.js') }}"></script>
-        <script src="{{ asset('js/custom/apps/chat/chat.js') }}"></script>
-    @show
-    @stack('scripts')
-    <script>
-        let flashdatasukses = $('.success-session').data('flashdata');
-        if (flashdatasukses) {
-            Swal.fire({
-                text: flashdatasukses,
-                icon: "success",
-                buttonsStyling: false,
-                confirmButtonText: "Ok, got it!",
-                customClass: {
-                    confirmButton: "btn btn-primary"
-                }
-            })
-        }
-        let flashdataerror = $('.error-session').data('flashdata');
-        if (flashdataerror) {
-            Swal.fire({
-                text: flashdataerror,
-                icon: "error",
-                buttonsStyling: false,
-                confirmButtonText: "Ok, got it!",
-                customClass: {
-                    confirmButton: "btn btn-primary",
-                }
-            });
-        }
-    </script>
+    </div>
 </body>
+@section('scripts')
+    <script src="{{ asset('plugins/global/plugins.bundle.js') }}"></script>
+    <script src="{{ asset('js/scripts.bundle.js') }}"></script>
+    <script src="{{ asset('plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script src="{{ asset('plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
+    <script src="{{ asset('js/custom/widgets.js') }}"></script>
+    <script src="{{ asset('js/custom/apps/chat/chat.js') }}"></script>
+@show
+@stack('scripts')
+<script>
+    let flashdatasukses = $('.success-session').data('flashdata');
+    if (flashdatasukses) {
+        Swal.fire({
+            text: flashdatasukses,
+            icon: "success",
+            buttonsStyling: false,
+            confirmButtonText: "Ok, got it!",
+            customClass: {
+                confirmButton: "btn btn-primary"
+            }
+        })
+    }
+    let flashdataerror = $('.error-session').data('flashdata');
+    if (flashdataerror) {
+        Swal.fire({
+            text: flashdataerror,
+            icon: "error",
+            buttonsStyling: false,
+            confirmButtonText: "Ok, got it!",
+            customClass: {
+                confirmButton: "btn btn-primary",
+            }
+        });
+    }
+    $('.price-money').on('change click keyup input paste', function(event) {
+        $(this).val(function(index, value) {
+            value = value.replace(/[^\d.-]/g, "");
+
+            value = value.replace(/\.{2,}/g, ".").replace(/\.(?=.*\.)/g, "");
+
+            if (value.includes(".")) {
+                const [integer, decimal] = value.split(".");
+                value = `${integer}.${decimal.substring(0, 2)}`;
+            }
+
+            return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        });
+    });
+</script>
 
 </html>

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('content-admin')
+@section('content')
     <!--begin::Container-->
     <div id="kt_content_container" class="container-xxl">
         <!--begin::Row-->
@@ -1001,7 +1001,7 @@
                                         <td>
                                             <div class="d-flex justify-content-end flex-shrink-0">
                                                 <a href="#"
-                                                    class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">                                                    
+                                                    class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
                                                     <span class="svg-icon svg-icon-3">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24"
                                                             height="24" viewBox="0 0 24 24" fill="none">

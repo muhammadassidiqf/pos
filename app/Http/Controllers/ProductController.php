@@ -2,54 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
+use App\Models\Category;
+use App\Models\Product;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 
-class RoleController extends Controller
+class ProductController extends Controller
 {
-    function __construct()
-    {
-        $this->middleware(['permission:role']);
-    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $title = 'Roles';
-        $permission = Permission::get(['id', 'name', 'created_at']);
-        return view('pages.roles', compact('title', 'permission'));
+        $title = 'Product';
+        $category = Category::get();
+        return view('pages.product', compact('title', 'category'));
     }
 
     public function list()
     {
-        $data = Role::with('permissions')->get(['id', 'name', 'created_at']);
+        $data = Product::get(['id', 'name', 'price', 'description', 'image']);
         if (request()->ajax()) {
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->editColumn('name', function ($data) {
-                    return $data->name;
+                    return ucfirst($data->name);
                 })
-                ->editColumn('waktu', function ($data) {
-                    return Carbon::parse($data->created_at)->translatedFormat('d F Y');
+                ->editColumn('price', function ($data) {
+                    return 'Rp. ' . number_format($data->price, 0, ',', '.');
                 })
-                ->editColumn('permission', function ($data) {
-                    // $per = implode(', ', $data->permissions->pluck('name')->toArray());
-                    $per = '';
-                    foreach ($data->permissions as $value) {
-                        $per .= '<span class="badge badge-light-primary fs-7 m-1">' . ucfirst($value->name) . '</span>';
-                    }
-                    return $per;
+                ->editColumn('image', function ($data) {
+                    return '<div class="image-input image-input-outline image-input-empty"
+                                    style="background-image: url(' . asset('storage/img/product/' . $data->image) . ')">
+                                <div class="image-input-wrapper w-125px h-125px"></div>
+                            </div>';
+                })
+                ->editColumn('description', function ($data) {
+                    return $data->description;
                 })
                 ->editColumn('aksi', function ($data) {
-                    $edit = route('roles.edit', encrypt($data->id));
+                    $edit = route('product.edit', encrypt($data->id));
                     return '
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#edit_roles_modal" data-remote="' . $edit . '"
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#edit_product_modal" data-remote="' . $edit . '"
                             class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
                             <span class="svg-icon svg-icon-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24"
@@ -82,7 +78,7 @@ class RoleController extends Controller
                         </button>
                         ';
                 })
-                ->rawColumns(['aksi', 'permission'])
+                ->rawColumns(['aksi', 'image'])
                 ->make(true);
         }
     }
@@ -101,14 +97,33 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            $permissions = Permission::whereIn('id', $request->permission)->pluck('id', 'id');
-            $role = Role::create(['name' => $request->name]);
-            $role->syncPermissions($permissions);
+            $file = $request->file('image');
+            $file_name = null;
+            if (!empty($file)) {
+                $file_name = $file->getClientOriginalName();
+                $file_name = preg_replace('!\s+!', ' ', $file_name);
+                $file_name = str_replace(' ', '_', $file_name);
+                $file_name = str_replace('%', '', $file_name);
+                $file_name = pathinfo($file_name, PATHINFO_FILENAME) . '-' . time() . '.' . pathinfo($file_name, PATHINFO_EXTENSION);
+                $file->move(public_path("storage/img/product/"), $file_name);
+            }
+
+            if (empty($file_name)) {
+                return redirect()->back()->with('error', 'Image failed to upload!');
+            }
+
+            Product::create([
+                'name' => $request->name,
+                'price' => preg_replace('/\D/', '', $request->price),
+                'description' => $request->description,
+                'category_id' => $request->category,
+                'image' => $file_name,
+            ]);
             DB::commit();
-            return redirect()->route('roles')->with('success', "Roles has been successfully added!");
+            return redirect()->route('product')->with('success', "Product has been successfully added!");
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('roles')->with('error', $e->getMessage());
+            return redirect()->route('product')->with('error', $e->getMessage());
         }
     }
 
@@ -125,10 +140,9 @@ class RoleController extends Controller
      */
     public function edit(string $id)
     {
-        $data = Role::with('permissions')->where('id', decrypt($id))->first();
-        $selectedPermission = $data->permissions->pluck('id')->toArray();
-        $permission = Permission::get(['id', 'name', 'created_at']);
-        return view('pages.edit-roles', compact('data', 'permission', 'selectedPermission'));
+        $data = Product::where('id', decrypt($id))->first();
+        $category = Category::get();
+        return view('pages.edit-product', compact('data', 'category'));
     }
 
     /**
@@ -138,16 +152,32 @@ class RoleController extends Controller
     {
         DB::beginTransaction();
         try {
-            $permissions = Permission::whereIn('id', $request->permission)->pluck('id', 'id');
-            $role = Role::find(decrypt($id));
-            $role->name = $request->name;
-            $role->syncPermissions($permissions);
-            $role->save();
+            $product = Product::where('id', decrypt($id))->first();
+            $file = $request->file('image');
+            $file_name = $product->image;
+            if (!empty($file)) {
+                $file_name = $file->getClientOriginalName();
+                $file_name = preg_replace('!\s+!', ' ', $file_name);
+                $file_name = str_replace(' ', '_', $file_name);
+                $file_name = str_replace('%', '', $file_name);
+                $file_name = pathinfo($file_name, PATHINFO_FILENAME) . '-' . time() . '.' . pathinfo($file_name, PATHINFO_EXTENSION);
+                $file->move(public_path("storage/img/product/"), $file_name);
+                if (file_exists(public_path("storage/img/product/" . $product->image))) {
+                    unlink(public_path("storage/img/product/" . $product->image));
+                }
+            }
+            $product->update([
+                'name' => $request->name,
+                'price' => preg_replace('/\D/', '', $request->price),
+                'description' => $request->description,
+                'category_id' => $request->category,
+                'image' => $file_name,
+            ]);
             DB::commit();
-            return redirect()->route('roles')->with('success', "Roles has been successfully updated!");
+            return redirect()->route('product')->with('success', "Product has been successfully updated!");
         } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('roles')->with('error', $e->getMessage());
+            DB::rollback();
+            return redirect()->route('product')->with('error', $e->getMessage());
         }
     }
 

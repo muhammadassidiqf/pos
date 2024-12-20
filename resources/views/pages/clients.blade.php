@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('content-admin')
+@section('content')
     <div id="kt_content_container" class="container-xxl">
         <div class="card">
             <div class="card-header border-0 pt-6">

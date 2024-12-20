@@ -123,10 +123,10 @@ class ClientsController extends Controller
 
             DB::commit();
 
-            return redirect()->route('clients.index')->with('success', "Clients has been successfully added!");
+            return redirect()->route('clients')->with('success', "Clients has been successfully added!");
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('clients.index')->with('error', "Clients failed to add, error " . $e . "!");
+            return redirect()->route('clients')->with('error', "Clients failed to add, error " . $e . "!");
         }
     }
 
@@ -175,10 +175,10 @@ class ClientsController extends Controller
             $client->save();
 
             DB::commit();
-            return redirect()->route('clients.index')->with('success', "Clients has been successfully updated!");
+            return redirect()->route('clients')->with('success', "Clients has been successfully updated!");
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('clients.index')->with('error', "Clients failed to update, error " . $e . "!");
+            return redirect()->route('clients')->with('error', "Clients failed to update, error " . $e . "!");
         }
     }
 

@@ -78,6 +78,30 @@
                         </a>
                     </div>
                 @endif
+                @if (Auth::user()->hasPermissionTo('category'))
+                    <div class="menu-item py-2">
+                        <a class="menu-link {{ Route::is('category') ? 'active' : '' }} menu-center"
+                            href="{{ route('category') }}" data-bs-trigger="hover" data-bs-dismiss="click"
+                            data-bs-placement="right">
+                            <span class="menu-icon me-0">
+                                <i class="bi bi-menu-app fs-2"></i>
+                            </span>
+                            <span class="menu-title">Category</span>
+                        </a>
+                    </div>
+                @endif
+                @if (Auth::user()->hasPermissionTo('product'))
+                    <div class="menu-item py-2">
+                        <a class="menu-link {{ Route::is('product') ? 'active' : '' }} menu-center"
+                            href="{{ route('product') }}" data-bs-trigger="hover" data-bs-dismiss="click"
+                            data-bs-placement="right">
+                            <span class="menu-icon me-0">
+                                <i class="bi bi-cup-straw fs-2"></i>
+                            </span>
+                            <span class="menu-title">Product</span>
+                        </a>
+                    </div>
+                @endif
                 @if (Auth::user()->hasPermissionTo('pos'))
                     <div class="menu-item py-2">
                         <a class="menu-link {{ Route::is('pos') ? 'active' : '' }} menu-center"

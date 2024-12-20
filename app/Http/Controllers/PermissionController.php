@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class PermissionController extends Controller
 {
@@ -24,9 +25,6 @@ class PermissionController extends Controller
         return view('pages.permission', compact('title', 'permission'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function list()
     {
         $data = Permission::get(['id', 'name', 'created_at']);
@@ -93,8 +91,15 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        Permission::create(['name' => strtolower($request->name)]);
-        return redirect()->route('permission.index')->with('success', "Permission has been successfully added!");
+        DB::beginTransaction();
+        try {
+            Permission::create(['name' => strtolower($request->name)]);
+            DB::commit();
+            return redirect()->route('permission')->with('success', "Permission has been successfully added!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('permission')->with('error', 'Role failed to add!');
+        }
     }
 
     /**
@@ -111,7 +116,6 @@ class PermissionController extends Controller
     public function edit(string $id)
     {
         $data = Permission::where('id', decrypt($id))->first();
-        // dd($permission);
         return view('pages.edit-permission', compact('data'));
     }
 
@@ -120,9 +124,16 @@ class PermissionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $permission = Permission::where('id', decrypt($id))->first();
-        $permission->update(['name' => strtolower($request->name)]);
-        return redirect()->route('permission.index')->with('success', "Permission has been successfully updated!");
+        DB::beginTransaction();
+        try {
+            $permission = Permission::where('id', decrypt($id))->first();
+            $permission->update(['name' => strtolower($request->name)]);
+            DB::commit();
+            return redirect()->route('permission')->with('success', "Permission has been successfully updated!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('permission')->with('error', 'Role failed to update!');
+        }
     }
 
     /**
